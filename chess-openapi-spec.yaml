@@ -1,0 +1,469 @@
+openapi: '3.0.2'
+info:
+  title: Chess
+  version: '1.0'
+servers:
+  - url: https://api.chess.com/
+paths:
+  /pub/player/{username}:
+    get:
+      summary: Get additional details about a player in a game.
+      description: Get additional details about a player in a game.
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/titled/{title}:
+    get:
+      summary: List of titled-player usernames.
+      description: List of titled-player usernames.
+      parameters:
+      - name: title
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Title'
+          example: GM
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: array of usernames for players with this title
+                items:
+                  type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/stats:
+    get:
+      summary: Get player stats. 
+      description: Get ratings, win/loss, and other stats about a player's game play, tactics, lessons and Puzzle Rush score. 
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStats'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/is-online:
+    get:
+      summary: Get player online status. 
+      description: Tells if a user has been online in the last five minutes. 
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  online:
+                    type: boolean
+                required:
+                  - online
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/games:
+    get:
+      summary: Current Daily Chess
+      description: Array of Daily Chess games that a player is currently playing.
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    description: array of usernames for players with this title
+                    items:
+                      $ref: '#/components/schemas/DailyGame'
+                required:
+                  - games                
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+      # Descriptions of common components
+components:
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Request exceeded rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Player:
+      type: string
+      enum: [white, black]
+    Title:
+      type: string
+      enum: [GM, WGM, IM, WIM, FM, WFM, NM, WNM, CM, WCM]      
+    Profile:
+      type: object
+      properties:
+        "@id":
+          type: string
+          format: uri
+        url:
+          type: string
+          format: uri
+        username:
+          type: string
+        player_id:
+          type: integer
+        title:
+          $ref: '#/components/schemas/Title'
+        status:
+          type: string
+          enum:
+            - closed
+            - closed:fair_play_violations
+            - basic
+            - premium
+            - mod
+            - staff
+        name:
+          type: string
+        avatar:
+          type: string
+          format: uri
+        location:
+          type: string
+        country:
+          type: string
+          format: uri
+        joined:
+          type: integer
+          format: timestamp
+        last_online:
+          type: integer
+          format: timestamp
+        followers:
+          type: integer
+        is_streamer:
+          type: boolean
+        twitch_url:
+          type: string
+          format: uri
+        fide:
+          type: integer
+      required:
+        - "@id"
+        - url
+        - username
+        - player_id
+        - status
+        - country
+        - joined
+        - last_online
+        - followers
+        - is_streamer
+    PlayerStats:
+      type: object
+      properties:
+        chess_daily:
+          $ref: '#/components/schemas/ChessStats'
+        chess_rapid:
+          $ref: '#/components/schemas/ChessStats'
+        chess_blitz:
+          $ref: '#/components/schemas/ChessStats'
+        chess_bullet:
+          $ref: '#/components/schemas/ChessStats'
+        chess960_daily:
+          $ref: '#/components/schemas/ChessStats'
+        chess960_rapid:
+          $ref: '#/components/schemas/ChessStats'
+        chess960_blitz:
+          $ref: '#/components/schemas/ChessStats'
+        chess960_bullet:
+          $ref: '#/components/schemas/ChessStats'
+        tactics:
+          $ref: '#/components/schemas/TacticsStats'
+        lessons:
+          $ref: '#/components/schemas/LessonsStats'
+        puzzle_rush:        
+          $ref: '#/components/schemas/PuzzleRushStats'
+    ChessStats:
+      type: object
+      properties:
+        last:
+          type: object
+          properties:
+            rating:
+              type: integer
+              minimum: 0
+              description: most-recent rating
+            date:
+              type: integer
+              format: timestamp
+              description: timestamp of the last rated game finished
+            rd:
+              type: integer
+              minimum: 0
+              description: the Glicko "RD" value used to calculate ratings changes
+          required:
+            - rating
+            - date
+            - rd
+        best:
+          type: object
+          description: the best rating achieved by a win
+          properties:
+            rating:
+              type: integer
+              minimum: 0
+              description: highest rating achieved
+            date:
+              type: integer
+              format: timestamp
+              description: timestamp of the best-win game
+            game:
+              type: string
+              format: uri
+              description: URL of the best-win game
+          required:
+            - rating
+            - date
+            - game
+        record:
+          type: object
+          description: summary of all games played
+          properties:
+            win:
+              type: integer
+              minimum: 0
+              description: number of games won
+            loss:
+              type: integer
+              minimum: 0
+              description: number of games lost
+            draw:
+              type: integer
+              minimum: 0
+              description: number of games drawn
+            time_per_move:
+              type: integer
+              minimum: 0
+              description: integer number of seconds per average move
+            timeout_percent:
+              type: number
+              format: float
+              minimum: 0
+              description: timeout percentage in the last 90 days
+          required:
+            - win
+            - loss
+            - draw
+        tournament:
+          type: object
+          description: summary of tournaments participated in
+          properties:
+            count:
+              type: integer
+              minimum: 0
+              description: number of tournaments joined
+            withdraw:
+              type: integer
+              minimum: 0
+              description: number of tournaments withdrawn from
+            points:
+              type: integer
+              minimum: 0
+              description: total number of points earned in tournaments
+            highest_finish:
+              type: integer
+              minimum: 0
+              description: best tournament place
+          required:
+            - count
+            - withdraw
+            - points
+            - highest_finish
+      required:
+        - last
+        - best
+        - record
+    Rating:
+      type: object
+      properties:
+        rating: 
+          type: integer
+        date:
+          type: integer
+          format: timestamp
+      required:
+        - rating
+        - date
+    TacticsStats:
+      type: object
+      properties:
+        higest:
+          $ref: '#/components/schemas/Rating'
+        lowest:
+          $ref: '#/components/schemas/Rating'
+    LessonsStats:
+      type: object
+      properties:
+        higest:
+          $ref: '#/components/schemas/Rating'
+        lowest:
+          $ref: '#/components/schemas/Rating'
+    Score:
+      type: object
+      properties:
+        score: 
+          type: integer
+        date:
+          type: integer
+          format: timestamp
+      required:
+        - score
+        - date
+    PuzzleRushStats:
+      type: object
+      properties:
+        higest:
+          $ref: '#/components/schemas/Score'
+        lowest:
+          $ref: '#/components/schemas/Score'
+    DailyGame:
+      type: object
+      properties:
+        white:
+          type: string
+          format: uri
+          description: URL of the white player's profile
+        black:
+          type: string
+          format: uri
+          description: URL of the black player's profile
+        url:
+          type: string
+          format: uri
+          description: URL of this game
+        fen:
+          type: string
+          description: current FEN
+        pgn:
+          type: string
+          description: current PGN
+        turn:
+          description: player to move
+          $ref: '#/components/schemas/Player'
+        move_by:
+          type: integer
+          format: timestamp
+          description: timestamp of when the next move must be made
+        draw_offer:
+          description: player who has made a draw offer (optional)
+          $ref: '#/components/schemas/Player'
+        last_activity:
+          type: integer
+          format: timestamp
+          description: timestamp of the last activity on the game
+        start_time:
+          type: integer
+          format: timestamp
+          description: timestamp of the game start (Daily Chess only)
+        time_control:
+          type: string
+          description: PGN-compliant time control
+        time_class:
+          type: string
+          enum: [daily, rapid, blitz, bullet]
+          description: time-per-move grouping, used for ratings
+        rules:
+          type: string
+          enum: [chess, chess960, bughouse, kingofthehill, threecheck, crazyhouse]
+          description: game variant information (e.g., "chess960") 
+        tournament:
+          type: string
+          format: uri
+          description: URL pointing to tournament (if available)
+        match:
+          type: string
+          format: uri
+          description: URL pointing to team match (if available)
+      required:
+        - white
+        - black
+        - url
+        - fen
+        - pgn
+        - turn
+        - last_activity
+        - time_control
+        - time_class
+        - rules
+    
+    # Schema for error response body
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
