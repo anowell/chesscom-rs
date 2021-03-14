@@ -341,7 +341,6 @@ components:
             - highest_finish
       required:
         - last
-        - best
         - record
     Rating:
       type: object
