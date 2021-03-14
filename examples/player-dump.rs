@@ -1,4 +1,4 @@
-use chesscom::ChessApi;
+use chesscom::{ChessApi, api::ChessStats};
 use chrono::{Duration, Utc};
 use std::{env, process};
 
@@ -37,45 +37,29 @@ async fn main() -> Result<()> {
 
     let stats = chess_api.get_user_stats(&username).await?;
     if let Some(stats) = stats.chess_daily {
-        println!(
-            "Daily: {} rating (rd={}) with {}-{}-{} record",
-            stats.last.rating,
-            stats.last.rd,
-            stats.record.win,
-            stats.record.loss,
-            stats.record.draw
-        );
+        print_stats("Daily", &stats);
     }
     if let Some(stats) = stats.chess_rapid {
-        println!(
-            "Rapid: {} rating (rd={}) with {}-{}-{} record",
-            stats.last.rating,
-            stats.last.rd,
-            stats.record.win,
-            stats.record.loss,
-            stats.record.draw
-        );
+        print_stats("Rapid", &stats);
     }
     if let Some(stats) = stats.chess_blitz {
-        println!(
-            "Blitz: {} rating (rd={}) with {}-{}-{} record",
-            stats.last.rating,
-            stats.last.rd,
-            stats.record.win,
-            stats.record.loss,
-            stats.record.draw
-        );
+        print_stats("Blitz", &stats);
     }
     if let Some(stats) = stats.chess_bullet {
-        println!(
-            "Bullet: {} rating (rd={}) with {}-{}-{} record",
-            stats.last.rating,
-            stats.last.rd,
-            stats.record.win,
-            stats.record.loss,
-            stats.record.draw
-        );
+        print_stats("Bullet", &stats);
     }
 
     Ok(())
+}
+
+fn print_stats(label: &str, stats: &ChessStats) {
+    println!(
+        "{}: {} rating (rd={}) with {}-{}-{} record",
+        label,
+        stats.last.rating,
+        stats.last.rd,
+        stats.record.win,
+        stats.record.loss,
+        stats.record.draw
+    );
 }
