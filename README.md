@@ -1,6 +1,7 @@
 # Chesscom
 
 [![Crate Badge](https://buildstats.info/crate/chesscom)](https://crates.io/crates/chesscom)
+[![Docs Badge](https://docs.rs/chesscom/badge.svg)](https://docs.rs/chesscom)
 
 Easy-to-use rust client for the [chess.com](chess.com) [data API](https://www.chess.com/news/view/published-data-api).
 
