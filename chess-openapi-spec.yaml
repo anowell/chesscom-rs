@@ -252,31 +252,31 @@ components:
             rating:
               type: integer
               minimum: 0
-              description: most-recent rating
+              description: Most-recent rating
             date:
               type: integer
               format: timestamp
-              description: timestamp of the last rated game finished
+              description: Timestamp of the last rated game finished
             rd:
               type: integer
               minimum: 0
-              description: the Glicko "RD" value used to calculate ratings changes
+              description: Glicko "RD" value used to calculate ratings changes
           required:
             - rating
             - date
             - rd
         best:
           type: object
-          description: the best rating achieved by a win
+          description: Best rating achieved by a win
           properties:
             rating:
               type: integer
               minimum: 0
-              description: highest rating achieved
+              description: Highest rating achieved
             date:
               type: integer
               format: timestamp
-              description: timestamp of the best-win game
+              description: Timestamp of the best-win game
             game:
               type: string
               format: uri
@@ -287,53 +287,53 @@ components:
             - game
         record:
           type: object
-          description: summary of all games played
+          description: Summary of all games played
           properties:
             win:
               type: integer
               minimum: 0
-              description: number of games won
+              description: Number of games won
             loss:
               type: integer
               minimum: 0
-              description: number of games lost
+              description: Number of games lost
             draw:
               type: integer
               minimum: 0
-              description: number of games drawn
+              description: Number of games drawn
             time_per_move:
               type: integer
               minimum: 0
-              description: integer number of seconds per average move
+              description: Number of seconds per average move
             timeout_percent:
               type: number
               format: float
               minimum: 0
-              description: timeout percentage in the last 90 days
+              description: Timeout percentage in the last 90 days
           required:
             - win
             - loss
             - draw
         tournament:
           type: object
-          description: summary of tournaments participated in
+          description: Summary of tournaments participated in
           properties:
             count:
               type: integer
               minimum: 0
-              description: number of tournaments joined
+              description: Number of tournaments joined
             withdraw:
               type: integer
               minimum: 0
-              description: number of tournaments withdrawn from
+              description: Number of tournaments withdrawn from
             points:
               type: integer
               minimum: 0
-              description: total number of points earned in tournaments
+              description: Total number of points earned in tournaments
             highest_finish:
               type: integer
               minimum: 0
-              description: best tournament place
+              description: Best tournament place
           required:
             - count
             - withdraw
@@ -402,39 +402,39 @@ components:
           description: URL of this game
         fen:
           type: string
-          description: current FEN
+          description: Current FEN
         pgn:
           type: string
-          description: current PGN
+          description: Current PGN
         turn:
-          description: player to move
+          description: Player to move
           $ref: '#/components/schemas/Player'
         move_by:
           type: integer
           format: timestamp
-          description: timestamp of when the next move must be made
+          description: Timestamp of when the next move must be made
         draw_offer:
-          description: player who has made a draw offer (optional)
+          description: Player who has made a draw offer (optional)
           $ref: '#/components/schemas/Player'
         last_activity:
           type: integer
           format: timestamp
-          description: timestamp of the last activity on the game
+          description: Timestamp of the last activity on the game
         start_time:
           type: integer
           format: timestamp
-          description: timestamp of the game start (Daily Chess only)
+          description: Timestamp of the game start (Daily Chess only)
         time_control:
           type: string
           description: PGN-compliant time control
         time_class:
           type: string
           enum: [daily, rapid, blitz, bullet]
-          description: time-per-move grouping, used for ratings
+          description: Time-per-move grouping, used for ratings
         rules:
           type: string
           enum: [chess, chess960, bughouse, kingofthehill, threecheck, crazyhouse]
-          description: game variant information (e.g., "chess960") 
+          description: Game variant information (e.g., "chess960") 
         tournament:
           type: string
           format: uri
