@@ -2,17 +2,19 @@
 
 DIR=$(dirname "$(readlink -f "$0")")
 
-docker run --rm -v $DIR:/local -w /local openapitools/openapi-generator-cli generate \
+mkdir -p $DIR/openapi
+docker run --rm -v $DIR:/local \
+  --user $(id -u):$(id -g) \
+  -w /local \
+  openapitools/openapi-generator-cli generate \
   --enable-post-process-file \
 	-i chess-openapi-spec.yaml \
 	-g rust \
 	-o openapi \
   -c config.yaml
 
-sudo chown -R $(id -u):$(id -g) $DIR/openapi
-pushd $DIR/openapi
-
 ## I really don't want my data structure to have integer timestamps
+pushd $DIR/openapi
 for field in date move_by last_activity start_time joined last_online; do
     # Struct timestamps first
     sed -i "s/pub $field: i32/#[serde(with = \"chrono::serde::ts_seconds\")]\n\tpub $field: chrono::DateTime<chrono::Utc>/g" src/**/*.rs
