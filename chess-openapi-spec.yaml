@@ -9,6 +9,7 @@ paths:
     get:
       summary: Get additional details about a player in a game.
       description: Get additional details about a player in a game.
+      operationId: getPlayerProfile
       parameters:
       - name: username
         in: path
@@ -32,6 +33,7 @@ paths:
     get:
       summary: List of titled-player usernames.
       description: List of titled-player usernames.
+      operationId: getTitledPlayers
       parameters:
       - name: title
         in: path
@@ -56,8 +58,9 @@ paths:
 
   /pub/player/{username}/stats:
     get:
-      summary: Get player stats. 
-      description: Get ratings, win/loss, and other stats about a player's game play, tactics, lessons and Puzzle Rush score. 
+      summary: Get player stats.
+      description: Get ratings, win/loss, and other stats about a player's game play, tactics, lessons and Puzzle Rush score.
+      operationId: getPlayerStats
       parameters:
       - name: username
         in: path
@@ -79,8 +82,9 @@ paths:
 
   /pub/player/{username}/is-online:
     get:
-      summary: Get player online status. 
-      description: Tells if a user has been online in the last five minutes. 
+      summary: Get player online status.
+      description: Tells if a user has been online in the last five minutes.
+      operationId: getPlayerOnlineStatus
       parameters:
       - name: username
         in: path
@@ -108,7 +112,8 @@ paths:
   /pub/player/{username}/games:
     get:
       summary: Current Daily Chess
-      description: Array of Daily Chess games that a player is currently playing.
+      description: Get list of Daily Chess games that a player is currently playing
+      operationId: getDailyChessGames
       parameters:
       - name: username
         in: path
@@ -126,17 +131,175 @@ paths:
                 properties:
                   games:
                     type: array
-                    description: array of usernames for players with this title
+                    description: Array of Daily Chess games that a player is currently playing
                     items:
                       $ref: '#/components/schemas/DailyGame'
                 required:
-                  - games                
+                  - games
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
-      # Descriptions of common components
+  /pub/player/{username}/games/to-move:
+    get:
+      summary: To-Move Daily Chess
+      description: Get list of Daily Chess games where it is the player's turn to move
+      operationId: getDailyChessGamesToMove
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    description: Array of Daily Chess games where it is the player's turn to move
+                    items:
+                      $ref: '#/components/schemas/ToMoveGame'
+                required:
+                  - games
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/games/archives:
+    get:
+      summary: List of Monthly Archives
+      description: Get list of monthly archives available for this player
+      operationId: getChessGamesArchives
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  archives:
+                    type: array
+                    description: List of URLs for monthly archives in ascending chronological order
+                    items:
+                      type: string
+                      format: uri
+                required:
+                  - archives
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/games/{year}/{month}:
+    get:
+      summary: Complete Monthly Archives
+      description: Get list of Live and Daily Chess games that a player has finished
+      operationId: getChessGamesForMonth
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      - name: year
+        in: path
+        description: Four digit year of the game-end
+        required: true
+        schema:
+          type: string
+          example: 2021
+      - name: month
+        in: path
+        description: Two-digit month of the game-end
+        required: true
+        schema:
+          type: string
+          example: 03
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    description: List of Live and Daily Chess games that a player has finished
+                    items:
+                      $ref: '#/components/schemas/CompletedGame'
+                required:
+                  - games
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /pub/player/{username}/games/{year}/{month}/pgn:
+    get:
+      summary: Multi-Game PGN Download
+      description: Get standard multi-game format PGN containing all games for a month
+      operationId: getChessGamesForMonthPGN
+      parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          example: rgnever
+      - name: year
+        in: path
+        description: Four digit year of the game-end
+        required: true
+        schema:
+          type: string
+          example: 2021
+      - name: month
+        in: path
+        description: Two-digit month of the game-end
+        required: true
+        schema:
+          type: string
+          example: 03
+      responses:
+        '200':
+          description: OK
+          content:
+            application/x-chess-pgn:
+              schema:
+                type: string
+                format: pgn
+                description: This response follows the PGN standard, and is not JSON-encoded.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                description: Indicates client should download, not display, the result
+                example: attachment; filename="ChessCom_username_{{year}}{{month}}.pgn"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+
+# Descriptions of common components
 components:
   responses:
     NotFound:
@@ -157,7 +320,7 @@ components:
       enum: [white, black]
     Title:
       type: string
-      enum: [GM, WGM, IM, WIM, FM, WFM, NM, WNM, CM, WCM]      
+      enum: [GM, WGM, IM, WIM, FM, WFM, NM, WNM, CM, WCM]
     Profile:
       type: object
       properties:
@@ -241,7 +404,7 @@ components:
           $ref: '#/components/schemas/TacticsStats'
         lessons:
           $ref: '#/components/schemas/LessonsStats'
-        puzzle_rush:        
+        puzzle_rush:
           $ref: '#/components/schemas/PuzzleRushStats'
     ChessStats:
       type: object
@@ -345,7 +508,7 @@ components:
     Rating:
       type: object
       properties:
-        rating: 
+        rating:
           type: integer
         date:
           type: integer
@@ -370,7 +533,7 @@ components:
     Score:
       type: object
       properties:
-        score: 
+        score:
           type: integer
         date:
           type: integer
@@ -434,7 +597,7 @@ components:
         rules:
           type: string
           enum: [chess, chess960, bughouse, kingofthehill, threecheck, crazyhouse]
-          description: Game variant information (e.g., "chess960") 
+          description: Game variant information (e.g., "chess960")
         tournament:
           type: string
           format: uri
@@ -454,7 +617,129 @@ components:
         - time_control
         - time_class
         - rules
-    
+    ToMoveGame:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL of this game
+        move_by:
+          type: integer
+          format: timestamp
+          description: Timestamp of when the next move must be made
+        draw_offer:
+          description: Player who has made a draw offer (optional)
+          type: boolean
+        last_activity:
+          type: integer
+          format: timestamp
+          description: Timestamp of the last activity on the game
+      required:
+        - url
+        - move_by
+        - last_activity
+    PlayerResult:
+      type: object
+      properties:
+        username:
+          type: string
+        rating:
+          type: integer
+          description: The player's rating at the start of the game
+          minimum: 0
+        result:
+          type: string
+          enum: [win, checkmated, agreed, repetition, timeout, resigned, stalemate, lose, insufficient, 50move, abandoned, kingofthehill, threecheck, timevsinsufficient, bughousepartnerlose]
+          description: |
+            Player result:
+             * `win` - Win
+             * `checkmated` - Checkmated
+             * `agreed` - Draw agreed
+             * `repetition` - Draw by repetition
+             * `timeout` - Timeout
+             * `resigned` - Resigned
+             * `stalemate` - Stalemate
+             * `lose` - Lose
+             * `insufficient` - Insufficient material
+             * `50` - Draw by 50-move rule
+             * `abandoned` - abandoned
+             * `kingofthehill` - Opponent king reached the hill
+             * `threecheck` - Checked for the 3rd time
+             * `timevsinsufficient` - Draw by timeout vs insufficient material
+             * `bughousepartnerlose` - Bughouse partner lost
+        "@id":
+          type: string
+          description: URL of this player's profile
+      required:
+        - username
+        - rating
+        - result
+        - "@id"
+    CompletedGame:
+      type: object
+      properties:
+        white:
+          description: Details of the white-piece player
+          $ref: '#/components/schemas/PlayerResult'
+        black:
+          description: Details of the white-piece player
+          $ref: '#/components/schemas/PlayerResult'
+        url:
+          type: string
+          format: uri
+          description: URL of this game
+        fen:
+          type: string
+          description: Current FEN
+        pgn:
+          type: string
+          description: Current PGN
+        start_time:
+          type: integer
+          format: timestamp
+          description: Timestamp of the game start (Daily Chess only)
+        end_time:
+          type: integer
+          format: timestamp
+          description: Timestamp of the game end
+        rated: # note, this field is missing from the documentation, but does appear in the API
+          type: boolean
+          description: Indicates if the game was rated
+        time_control:
+          type: string
+          description: PGN-compliant time control
+        time_class:  # note, this field is missing from the documentation, but does appear in the API
+          type: string
+          enum: [daily, rapid, blitz, bullet]
+          description: Time-per-move grouping, used for ratings
+        rules:
+          type: string
+          enum: [chess, chess960, bughouse, kingofthehill, threecheck, crazyhouse]
+          description: Game variant information (e.g., "chess960")
+        eco:
+          type: string
+          description: URL pointing to ECO opening (if available)
+        tournament:
+          type: string
+          format: uri
+          description: URL pointing to tournament (if available)
+        match:
+          type: string
+          format: uri
+          description: URL pointing to team match (if available)
+      required:
+        - white
+        - black
+        - url
+        - fen
+        - pgn
+        - end_time
+        - rated
+        - time_control
+        - time_class
+        - rules
+
     # Schema for error response body
     Error:
       type: object

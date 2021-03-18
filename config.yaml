@@ -1,6 +1,6 @@
 templateDir: templates
 packageName: chesscom-openapi
-packageVersion: 0.1.0
+packageVersion: 0.1.1
   #files:
   #  util.rs:
   #    folder: src
